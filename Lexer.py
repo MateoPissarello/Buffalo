@@ -1,11 +1,16 @@
-from keyword import kwlist, softkwlist
+from keyword import softkwlist
+from utils import KEYWORDS
 
 class TokenType:
-    IDENTIFIER = "IDENTIFIER"
+    IDENTIFIER = "id"
     PRINT = "print"
-    STRING = "STRING"
-    LPAREN = "LPAREN"
-    RPAREN = "RPAREN"
+    STRING = "tk_cadena"
+    LPAREN = "tk_paren_izq"
+    RPAREN = "tk_paren_der"
+    COLON = "tk_dos_puntos"
+    LBRACE = "tk_llave_izq"
+    RBRACE = "tk_llave_der"
+    COMMA = "tk_coma"
     WHITESPACE = "WHITESPACE"
     UNKNOWN = "UNKNOWN"
 
@@ -55,6 +60,16 @@ class TokenIdentifier:
         return f"<{self.token_type},{self.value},{self.line},{self.starting_position}>"
 
 
+class TokenSymbol:
+    def __init__(self, value, line, starting_position):
+        self.value = value
+        self.line = line
+        self.starting_position = starting_position
+
+    def __repr__(self):
+        return f"<{self.value},{self.line},{self.starting_position}>"
+
+
 def is_identifier_char(c):
     return c.isalnum() or c == "_"
 
@@ -71,11 +86,20 @@ def is_paren(c):
     return c in "()"
 
 
+def is_colon(c):
+    return c == ":"
+
+
+def is_hash(c):
+    return c == "#"
+
+
 class Lexer:
     def __init__(self, lines):
         self.lines = lines
         self.tokens = []
-        self.keywords = kwlist
+        self.space = " "
+        self.keywords = KEYWORDS
         self.soft_keywords = softkwlist
 
     def tokenize(self):
@@ -94,17 +118,20 @@ class Lexer:
                             ReservedWordToken(
                                 value=value,
                                 line=self.lines.index(line) + 1,
-                                starting_position=start,
+                                starting_position=start + 1,
                             )
                         )
-                    self.tokens.append(
-                        TokenIdentifier(
-                            TokenType.IDENTIFIER,
-                            value,
-                            self.lines.index(line) + 1,
-                            start,
-                        )
-                    )
+
+                    else:
+                        self.tokens.append(
+                            TokenIdentifier(
+                                token_type=TokenType.IDENTIFIER,
+                                value=line[start:position],
+                                line=self.lines.index(line) + 1,
+                                starting_position=start + 1,
+                            )
+
+                  
                 elif is_quote(char):
                     # State: Identifying a string literal
                     start = position
@@ -115,10 +142,10 @@ class Lexer:
                         position += 1  # Skip the closing quote
                         self.tokens.append(
                             TokenIdentifier(
-                                TokenType.STRING,
-                                line[start:position],
-                                self.lines.index(line) + 1,
-                                start,
+                                token_type=TokenType.STRING,
+                                value=line[start:position],
+                                line=self.lines.index(line) + 1,
+                                starting_position=start,
                             )
                         )
                     else:
@@ -127,20 +154,18 @@ class Lexer:
                 elif is_paren(char):
                     if char == "(":
                         self.tokens.append(
-                            TokenIdentifier(
-                                TokenType.LPAREN,
-                                char,
-                                self.lines.index(line) + 1,
-                                position,
+                            TokenSymbol(
+                                value=TokenType.LPAREN,
+                                line=self.lines.index(line) + 1,
+                                starting_position=position + 1,
                             )
                         )
                     else:
                         self.tokens.append(
-                            TokenIdentifier(
-                                TokenType.RPAREN,
-                                char,
-                                self.lines.index(line) + 1,
-                                position,
+                            TokenSymbol(
+                                value=TokenType.RPAREN,
+                                line=self.lines.index(line) + 1,
+                                starting_position=position,
                             )
                         )
                     position += 1
@@ -149,14 +174,23 @@ class Lexer:
                     start = position
                     while position < length and is_whitespace(line[position]):
                         position += 1
+                    # self.tokens.append(
+                    #     TokenIdentifier(
+                    #         TokenType.WHITESPACE,
+                    #         line[start:position],
+                    #         self.lines.index(line) + 1,
+                    #         start,
+                    #     )
+                    # )
+                elif is_colon(char):
                     self.tokens.append(
-                        TokenIdentifier(
-                            TokenType.WHITESPACE,
-                            line[start:position],
-                            self.lines.index(line) + 1,
-                            start,
+                        TokenSymbol(
+                            value=TokenType.COLON,
+                            line=self.lines.index(line) + 1,
+                            starting_position=position + 1,
                         )
                     )
+                    position += 1
 
                 else:
                     self.tokens.append(
@@ -171,11 +205,12 @@ class Lexer:
 
         return self.tokens
 
-    def token_to_string(self):
-        """
-        Convert tokens to a string representation for writing to a file.
-        """
-        result = []
-        for token in self.tokens:
-            result.append(str(token))
-        return "\n".join(result)
+
+  def token_to_string(self):
+      """
+      Convert tokens to a string representation for writing to a file.
+      """
+      result = []
+      for token in self.tokens:
+          result.append(str(token))
+
