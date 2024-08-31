@@ -1,0 +1,4 @@
+<IDENTIFIER,print,1,0>
+<LPAREN,(,1,5>
+<STRING,"Hola mundo",1,6>
+<RPAREN,),1,18>

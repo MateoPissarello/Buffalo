@@ -1,10 +1,6 @@
 from keyword import softkwlist
 from utils import KEYWORDS
 
-# Listar todas las funciones y objetos incorporados
-# print(dir(builtins))
-
-
 class TokenType:
     IDENTIFIER = "id"
     PRINT = "print"
@@ -116,14 +112,16 @@ class Lexer:
                     start = position
                     while position < length and is_identifier_char(line[position]):
                         position += 1
-                    if line[start:position] in self.keywords:
+                    value = line[start:position]
+                    if value in self.keywords:
                         self.tokens.append(
                             ReservedWordToken(
-                                value=line[start:position],
+                                value=value,
                                 line=self.lines.index(line) + 1,
                                 starting_position=start + 1,
                             )
                         )
+
                     else:
                         self.tokens.append(
                             TokenIdentifier(
@@ -132,7 +130,8 @@ class Lexer:
                                 line=self.lines.index(line) + 1,
                                 starting_position=start + 1,
                             )
-                        )
+
+                  
                 elif is_quote(char):
                     # State: Identifying a string literal
                     start = position
@@ -205,3 +204,13 @@ class Lexer:
                     position += 1
 
         return self.tokens
+
+
+  def token_to_string(self):
+      """
+      Convert tokens to a string representation for writing to a file.
+      """
+      result = []
+      for token in self.tokens:
+          result.append(str(token))
+
