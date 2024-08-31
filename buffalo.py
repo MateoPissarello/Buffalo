@@ -2,6 +2,7 @@
 
 import argparse
 from FileHandler import FileHandler, LineByLineReadStrategy
+from Lexer import Lexer
 
 
 def main():
@@ -22,7 +23,11 @@ def main():
     if args.file:
         path = args.file.strip()
         line_by_line_handler = FileHandler(path, LineByLineReadStrategy())
-        print(line_by_line_handler.read())
+        lines = line_by_line_handler.read()
+
+        lexer = Lexer(lines=lines)
+        tokens = lexer.tokenize()
+        print(tokens)
 
     else:
         print("No se proporcionó ningún archivo.")
