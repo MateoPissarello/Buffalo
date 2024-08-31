@@ -1,9 +1,5 @@
 from keyword import kwlist, softkwlist
 
-# Listar todas las funciones y objetos incorporados
-# print(dir(builtins))
-
-
 class TokenType:
     IDENTIFIER = "IDENTIFIER"
     PRINT = "print"
@@ -79,7 +75,6 @@ class Lexer:
     def __init__(self, lines):
         self.lines = lines
         self.tokens = []
-        self.space = " "
         self.keywords = kwlist
         self.soft_keywords = softkwlist
 
@@ -93,10 +88,11 @@ class Lexer:
                     start = position
                     while position < length and is_identifier_char(line[position]):
                         position += 1
-                    if line[start:position] in self.keywords:
+                    value = line[start:position]
+                    if value in self.keywords:
                         self.tokens.append(
                             ReservedWordToken(
-                                value=line[start:position],
+                                value=value,
                                 line=self.lines.index(line) + 1,
                                 starting_position=start,
                             )
@@ -104,7 +100,7 @@ class Lexer:
                     self.tokens.append(
                         TokenIdentifier(
                             TokenType.IDENTIFIER,
-                            line[start:position],
+                            value,
                             self.lines.index(line) + 1,
                             start,
                         )
@@ -173,14 +169,13 @@ class Lexer:
                     )
                     position += 1
 
-            return self.tokens
+        return self.tokens
 
-    # temp_string = ""
-    # for char in chars:
-    #     if char is self.space:
-    #         self.tokens.append(temp_string)
-    #         temp_string = ""
-    #     else:
-    #         temp_string += char
-    # self.tokens.append(temp_string)
-    # print(self.tokens)
+    def token_to_string(self):
+        """
+        Convert tokens to a string representation for writing to a file.
+        """
+        result = []
+        for token in self.tokens:
+            result.append(str(token))
+        return "\n".join(result)
