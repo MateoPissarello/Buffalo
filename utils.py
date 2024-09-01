@@ -36,6 +36,7 @@ KEYWORDS = {
     "yield",
     "self",
     "print",
+    "object",
 }
 
 SYMBOLS = {
