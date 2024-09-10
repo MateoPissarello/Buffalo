@@ -1,6 +1,7 @@
 from keyword import softkwlist
 from utils import KEYWORDS
 
+
 class TokenType:
     IDENTIFIER = "id"
     PRINT = "print"
@@ -130,8 +131,8 @@ class Lexer:
                                 line=self.lines.index(line) + 1,
                                 starting_position=start + 1,
                             )
+                        )
 
-                  
                 elif is_quote(char):
                     # State: Identifying a string literal
                     start = position
@@ -206,11 +207,10 @@ class Lexer:
         return self.tokens
 
 
-  def token_to_string(self):
-      """
-      Convert tokens to a string representation for writing to a file.
-      """
-      result = []
-      for token in self.tokens:
-          result.append(str(token))
-
+def token_to_string(self):
+    """
+    Convert tokens to a string representation for writing to a file.
+    """
+    result = []
+    for token in self.tokens:
+        result.append(str(token))
