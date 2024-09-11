@@ -127,9 +127,13 @@ class AFD:
         position = 0
         value = ""
         for line_index, line in enumerate(lines):
-            while len(line) > 0:
+            initial_length = len(line)
+            while len(line) >= 0:
                 char = line[0]
-                line = line[1:]
+                if len(line) != 1:
+                    line = line[1:]
+                else:
+                    line = ""
                 if char == '"':
                     value += char
                     char = '"'
@@ -154,6 +158,15 @@ class AFD:
                         char = "%s"
 
                 try:
+                    if position == (initial_length - 1):
+                        token = self.handle_token(value, line_index, position)
+                        tokens.append(token)
+                        print(token)
+                        value = ""
+                        estadoActual = self.estadoInicial
+                        position = 0
+                        break
+                    
                     estadoActual = self.transicion(estadoActual, char)
                 except KeyError:
                     line = value[-1] + line
