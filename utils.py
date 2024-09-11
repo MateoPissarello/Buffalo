@@ -20,6 +20,7 @@ KEYWORDS = {
     "from",
     "global",
     "if",
+    "str",
     "import",
     "in",
     "is",
@@ -36,6 +37,11 @@ KEYWORDS = {
     "yield",
     "self",
     "print",
+    "object",
+    "__init__",
+    "__main__"
+    "__str__"
+    "__repr__"
 }
 
 SYMBOLS = {
