@@ -43,7 +43,7 @@ class LineByLineReadStrategy(FileReadingStrategy):
         lines = []
         with open(path, "r") as file:
             for line in file:
-                lines.append(line)
+                lines.append(line.strip())
         return lines
 
 
