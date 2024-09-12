@@ -147,76 +147,96 @@ class Lexer:
         self.soft_keywords = softkwlist
 
     def tokenize(self):
-        for line in self.lines:
-            length = len(line)
-            position = 0
-            while position < length:
-                char = line[position]
-                if char.isalpha() or char == "_":
-                    start = position
-                    while position < length and is_identifier_char(line[position]):
+        error = False
+        if not error:
+            for line in self.lines:
+                length = len(line)
+                position = 0
+                while position < length:
+                    char = line[position]
+                    if char.isalpha() or char == "_":
+                        start = position
+                        while position < length and is_identifier_char(line[position]):
+                            position += 1
+                        value = line[start:position]
+                        if value in self.keywords:
+                            self.tokens.append(
+                                ReservedWordToken(
+                                    value=value,
+                                    line=self.lines.index(line) + 1,
+                                    starting_position=start + 1,
+                                )
+                            )
+
+                        else:
+                            self.tokens.append(
+                                TokenIdentifier(
+                                    token_type=TokenType.IDENTIFIER,
+                                    value=line[start:position],
+                                    line=self.lines.index(line) + 1,
+                                    starting_position=start + 1,
+                                )
+                            )
+                    elif is_hash(char):
+                        break
+                    elif is_quote(char):
+                        # State: Identifying a string literal
+                        start = position
                         position += 1
-                    value = line[start:position]
-                    if value in self.keywords:
-                        self.tokens.append(
-                            ReservedWordToken(
-                                value=value,
-                                line=self.lines.index(line) + 1,
-                                starting_position=start + 1,
+                        while position < length and not is_quote(line[position]):
+                            position += 1
+                        if position < length:
+                            position += 1  # Skip the closing quote
+                            self.tokens.append(
+                                TokenIdentifier(
+                                    token_type=TokenType.STRING,
+                                    value=line[start:position],
+                                    line=self.lines.index(line) + 1,
+                                    starting_position=start + 1,
+                                )
                             )
-                        )
+                        # else:
+                        #     raise RuntimeError("Unterminated string literal")
 
-                    else:
-                        self.tokens.append(
-                            TokenIdentifier(
-                                token_type=TokenType.IDENTIFIER,
-                                value=line[start:position],
-                                line=self.lines.index(line) + 1,
-                                starting_position=start + 1,
+                    elif is_paren(char):
+                        if char == "(":
+                            self.tokens.append(
+                                TokenSymbol(
+                                    value=TokenType.LPAREN,
+                                    line=self.lines.index(line) + 1,
+                                    starting_position=position + 1,
+                                )
                             )
-                        )
-                elif is_hash(char):
-                    break
-                elif is_quote(char):
-                    # State: Identifying a string literal
-                    start = position
-                    position += 1
-                    while position < length and not is_quote(line[position]):
+                        else:
+                            self.tokens.append(
+                                TokenSymbol(
+                                    value=TokenType.RPAREN,
+                                    line=self.lines.index(line) + 1,
+                                    starting_position=position + 1,
+                                )
+                            )
                         position += 1
-                    if position < length:
-                        position += 1  # Skip the closing quote
-                        self.tokens.append(
-                            TokenIdentifier(
-                                token_type=TokenType.STRING,
-                                value=line[start:position],
-                                line=self.lines.index(line) + 1,
-                                starting_position=start + 1,
-                            )
-                        )
-                    # else:
-                    #     raise RuntimeError("Unterminated string literal")
 
-                elif is_paren(char):
-                    if char == "(":
-                        self.tokens.append(
-                            TokenSymbol(
-                                value=TokenType.LPAREN,
-                                line=self.lines.index(line) + 1,
-                                starting_position=position + 1,
+                    elif is_brace(char):
+                        if char == "{":
+                            self.tokens.append(
+                                TokenSymbol(
+                                    value=SymbolsDict[char],
+                                    line=self.lines.index(line) + 1,
+                                    starting_position=position + 1,
+                                )
                             )
-                        )
-                    else:
-                        self.tokens.append(
-                            TokenSymbol(
-                                value=TokenType.RPAREN,
-                                line=self.lines.index(line) + 1,
-                                starting_position=position + 1,
+                        else:
+                            self.tokens.append(
+                                TokenSymbol(
+                                    value=SymbolsDict[char],
+                                    line=self.lines.index(line) + 1,
+                                    starting_position=position + 1,
+                                )
                             )
-                        )
-                    position += 1
+                        position += 1
 
-                elif is_brace(char):
-                    if char == "{":
+                    elif is_dot(char):
                         self.tokens.append(
                             TokenSymbol(
                                 value=SymbolsDict[char],
@@ -224,7 +244,33 @@ class Lexer:
                                 starting_position=position + 1,
                             )
                         )
-                    else:
+                        position += 1
+
+                    elif is_whitespace(char):
+                        start = position
+                        while position < length and is_whitespace(line[position]):
+                            position += 1
+                        # self.tokens.append(
+                        #     TokenIdentifier(
+                        #         TokenType.WHITESPACE,
+                        #         line[start:position],
+                        #         self.lines.index(line) + 1,
+                        #         start,
+                        #     )
+                        # )
+                    elif is_colon(char):
+                        self.tokens.append(
+                            TokenSymbol(
+                                value=TokenType.COLON,
+                                line=self.lines.index(line) + 1,
+                                starting_position=position + 1,
+                            )
+                        )
+                        position += 1
+                    elif is_equal(char):
+                        if position + 1 < length and line[position + 1] == "=":
+                            char = "=="
+                            position += 1
                         self.tokens.append(
                             TokenSymbol(
                                 value=SymbolsDict[char],
@@ -232,99 +278,55 @@ class Lexer:
                                 starting_position=position + 1,
                             )
                         )
-                    position += 1
-
-                elif is_dot(char):
-                    self.tokens.append(
-                        TokenSymbol(
-                            value=SymbolsDict[char],
-                            line=self.lines.index(line) + 1,
-                            starting_position=position + 1,
-                        )
-                    )
-                    position += 1
-
-                elif is_whitespace(char):
-                    start = position
-                    while position < length and is_whitespace(line[position]):
                         position += 1
-                    # self.tokens.append(
-                    #     TokenIdentifier(
-                    #         TokenType.WHITESPACE,
-                    #         line[start:position],
-                    #         self.lines.index(line) + 1,
-                    #         start,
-                    #     )
-                    # )
-                elif is_colon(char):
-                    self.tokens.append(
-                        TokenSymbol(
-                            value=TokenType.COLON,
-                            line=self.lines.index(line) + 1,
-                            starting_position=position + 1,
+
+                    elif is_admiracion(char):
+                        if position + 1 < length and line[position + 1] == "=":
+                            char = "!="
+                            position += 1
+                        self.tokens.append(
+                            TokenSymbol(
+                                value=SymbolsDict[char],
+                                line=self.lines.index(line) + 1,
+                                starting_position=position + 1,
+                            )
                         )
-                    )
-                    position += 1
-                elif is_equal(char):
-                    if position + 1 < length and line[position + 1] == "=":
-                        char = "=="
                         position += 1
-                    self.tokens.append(
-                        TokenSymbol(
-                            value=SymbolsDict[char],
-                            line=self.lines.index(line) + 1,
-                            starting_position=position + 1,
-                        )
-                    )
-                    position += 1
 
-                elif is_admiracion(char):
-                    if position + 1 < length and line[position + 1] == "=":
-                        char = "!="
+                    elif is_dash(char):
+                        initial_position = position
+                        if position + 1 < length and line[position + 1] == ">":
+                            char = "->"
+                            position += 1
+                        self.tokens.append(
+                            TokenSymbol(
+                                value=SymbolsDict[char],
+                                line=self.lines.index(line) + 1,
+                                starting_position=initial_position + 1,
+                            )
+                        )
                         position += 1
-                    self.tokens.append(
-                        TokenSymbol(
-                            value=SymbolsDict[char],
-                            line=self.lines.index(line) + 1,
-                            starting_position=position + 1,
-                        )
-                    )
-                    position += 1
 
-                elif is_dash(char):
-                    initial_position = position
-                    if position + 1 < length and line[position + 1] == ">":
-                        char = "->"
+                    elif is_comma(char):
+                        self.tokens.append(
+                            TokenSymbol(
+                                value=SymbolsDict[char],
+                                line=self.lines.index(line) + 1,
+                                starting_position=position + 1,
+                            )
+                        )
                         position += 1
-                    self.tokens.append(
-                        TokenSymbol(
-                            value=SymbolsDict[char],
-                            line=self.lines.index(line) + 1,
-                            starting_position=initial_position + 1,
-                        )
-                    )
-                    position += 1
 
-                elif is_comma(char):
-                    self.tokens.append(
-                        TokenSymbol(
-                            value=SymbolsDict[char],
-                            line=self.lines.index(line) + 1,
-                            starting_position=position + 1,
+                    else:
+                        self.tokens.append(
+                            TokenSymbol(
+                                value=TokenType.UNKNOWN,
+                                line=self.lines.index(line) + 1,
+                                starting_position=position + 1,
+                            )
                         )
-                    )
-                    position += 1
-
-                else:
-                    self.tokens.append(
-                        TokenSymbol(
-                            value=TokenType.UNKNOWN,
-                            line=self.lines.index(line) + 1,
-                            starting_position=position + 1,
-                        )
-                    )
-                    position += 1
-
+                        position += 1
+        
         return self.tokens
 
 
