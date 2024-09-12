@@ -9,25 +9,24 @@
 <tk_paren_izq,3,10>
 <id,var2,4,5>
 <tk_asignacion,4,10>
-<UNKNOWN,4,12>
-<UNKNOWN,4,14>
-<UNKNOWN,4,15>
-<tk_cadena,"otra cadena",4,17>
+<tk_numero,52,4,12>
+<tk_mult,4,15>
+<tk_mult,4,16>
+<tk_cadena,"otra cadena",4,18>
 <id,resultado,5,5>
 <tk_asignacion,5,15>
 <id,var2,5,17>
 <tk_igual,5,23>
-<UNKNOWN,5,25>
-<UNKNOWN,5,26>
+<tk_numero,10,5,25>
 <if,6,5>
 <id,resultado,6,8>
 <tk_dos_puntos,6,17>
 <print,7,9>
 <tk_cadena,"Error de sintaxis!",7,15>
 <id,variable1,8,5>
-<UNKNOWN,8,15>
-<UNKNOWN,8,16>
-<UNKNOWN,8,17>
+<tk_arroba,8,15>
+<tk_arroba,8,16>
+<tk_arroba,8,17>
 <tk_cadena,"caracter invalido",8,19>
 <id,mi_variable,9,5>
 <tk_asignacion,9,17>
