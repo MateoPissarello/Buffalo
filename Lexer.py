@@ -20,6 +20,7 @@ SymbolsDict = {
     "*": "tk_mult",
     "/": "tk_div",
     "%": "tk_mod",
+    ",": "tk_coma",
     "->": "tk_flecha",
     "=": "tk_asignacion",
     "==": "tk_igual",
@@ -131,6 +132,10 @@ def is_colon(c):
 
 def is_hash(c):
     return c == "#"
+
+
+def is_comma(c):
+    return c == ","
 
 
 class Lexer:
@@ -296,6 +301,16 @@ class Lexer:
                             value=SymbolsDict[char],
                             line=self.lines.index(line) + 1,
                             starting_position=initial_position + 1,
+                        )
+                    )
+                    position += 1
+
+                elif is_comma(char):
+                    self.tokens.append(
+                        TokenSymbol(
+                            value=SymbolsDict[char],
+                            line=self.lines.index(line) + 1,
+                            starting_position=position + 1,
                         )
                     )
                     position += 1
