@@ -45,28 +45,54 @@ SymbolsDict = {
 }
 
 
-class Symbols:
-    TK_SUM = "+"
-    TK_SUBST = "-"
-    TK_MULT = "*"
-    TK_DIV = "/"
-    TK_MOD = "%"
-    TK_ASSIGN = "="
-    TK_EQUAL = "=="
-    TK_NOT_EQUAL = "!="
-    TK_GREATER = ">"
-    TK_LESS = "<"
-    TK_GREATER_EQUAL = ">="
-    TK_LESS_EQUAL = "<="
-    TK_AND = "and"
-    TK_OR = "or"
-    TK_NOT = "not"
-    TK_TRUE = "True"
-    TK_FALSE = "False"
-    TK_NONE = "None"
-    TK_IF = "if"
-    TK_ELSE = "else"
-    TK_EXCLAMATION = "!"
+¡
+
+SymbolsDict = {
+    "+": "tk_suma",
+    "-": "tk_resta",
+    "*": "tk_mult",
+    "/": "tk_div",
+    "@": "tk_arroba",
+    "%": "tk_mod",
+    ",": "tk_coma",
+    "->": "tk_flecha",
+    "=": "tk_asignacion",
+    "==": "tk_igual",
+    "!=": "tk_diferente",
+    "<": "tk_menor",
+    ">": "tk_mayor",
+    "[": "tk_corchete_izq",
+    "]": "tk_corchete_der",
+    "<=": "tk_menor_igual",
+    ">=": "tk_mayor_igual",
+    ".": "tk_punto",
+    "{": "tk_llave_izq",
+    "}": "tk_llave_der",
+}
+
+
+# class Symbols:
+#     TK_SUM = "+"
+#     TK_SUBST = "-"
+#     TK_MULT = "*"
+#     TK_DIV = "/"
+#     TK_MOD = "%"
+#     TK_ASSIGN = "="
+#     TK_EQUAL = "=="
+#     TK_NOT_EQUAL = "!="
+#     TK_GREATER = ">"
+#     TK_LESS = "<"
+#     TK_GREATER_EQUAL = ">="
+#     TK_LESS_EQUAL = "<="
+#     TK_AND = "and"
+#     TK_OR = "or"
+#     TK_NOT = "not"
+#     TK_TRUE = "True"
+#     TK_FALSE = "False"
+#     TK_NONE = "None"
+#     TK_IF = "if"
+#     TK_ELSE = "else"
+#     TK_EXCLAMATION = "!"
 
 
 class ReservedWordToken:
@@ -102,6 +128,14 @@ class TokenSymbol:
 
 def is_identifier_char(c):
     return c.isalnum() or c == "_"
+
+
+def is_symbol(c):
+    return c in SYMBOLS
+
+
+def is_number(c):
+    return c.isdigit()
 
 
 def is_whitespace(c):
