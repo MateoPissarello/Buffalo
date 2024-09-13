@@ -1,0 +1,47 @@
+<try,1,1>
+<tk_dos_puntos,1,4>
+<id,itemCode,2,5>
+<tk_asignacion,2,14>
+<id,items,2,16>
+<tk_corchete_izq,2,21>
+<tk_cadena,"itemCode",2,22>
+<tk_corchete_der,2,32>
+<except,3,1>
+<id,KeyError,3,8>
+<tk_dos_puntos,3,16>
+<print,4,5>
+<tk_cadena,"Bad parameter name",4,11>
+<else,5,1>
+<tk_dos_puntos,5,5>
+<id,dbObject,6,5>
+<tk_asignacion,6,13>
+<id,db,6,14>
+<tk_punto,6,16>
+<id,GqlQuery,6,17>
+<tk_paren_izq,6,25>
+<tk_cadena,"SELECT * FROM %s WHERE code=:1",6,26>
+<tk_mod,6,59>
+<id,dbName,6,61>
+<tk_coma,6,67>
+<id,itemCode,6,68>
+<tk_paren_der,6,76>
+<tk_punto,6,77>
+<id,get,6,78>
+<tk_paren_izq,6,81>
+<tk_paren_der,6,82>
+<try,7,5>
+<tk_dos_puntos,7,8>
+<id,dbObject,8,9>
+<tk_punto,8,17>
+<id,delete,8,18>
+<tk_paren_izq,8,24>
+<tk_paren_der,8,25>
+<except,9,5>
+<id,AttributeError,9,12>
+<tk_dos_puntos,9,26>
+<print,10,9>
+<tk_cadena,"There's no item with that code",10,15>
+<except,11,5>
+<tk_dos_puntos,11,11>
+<print,12,9>
+<tk_cadena,"Unknow error",12,15>

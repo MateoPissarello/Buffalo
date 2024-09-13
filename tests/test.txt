@@ -1,3 +1,0 @@
-def make_noise(self: "Animal") -> object:
-    if (self.makes_noise):
-    print(self.sound())

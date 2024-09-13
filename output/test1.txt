@@ -1,0 +1,4 @@
+<print,1,1>
+<tk_paren_izq,1,6>
+<tk_cadena,"Hola mundo",1,6>
+<tk_paren_der,1,18>

@@ -1,0 +1,20 @@
+<id,suma,1,1>
+<tk_asignacion,1,6>
+<lambda,1,8>
+<id,x,1,15>
+<tk_coma,1,16>
+<id,y,1,18>
+<tk_dos_puntos,1,19>
+<id,x,1,21>
+<tk_suma,1,23>
+<id,y,1,25>
+<print,2,1>
+<tk_paren_izq,2,6>
+<id,suma,2,7>
+<tk_paren_izq,2,11>
+<tk_numero,3,2,12>
+<tk_coma,2,13>
+<tk_numero,5,2,15>
+<tk_paren_der,2,16>
+<tk_paren_der,2,17>
+>>>Error lexico(linea:4,posicion:1)
