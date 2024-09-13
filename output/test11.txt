@@ -1,0 +1,1 @@
+>>>Error lexico(linea:1,posicion:0)
