@@ -13,6 +13,10 @@ class TokenType:
     COMMA = "tk_coma"
     WHITESPACE = "WHITESPACE"
     UNKNOWN = "UNKNOWN"
+    ASSIGN = "tk_asignacion"  # Asegúrate de que esto esté definido
+    IF = "if"  # Asegúrate de que esto esté definido
+    ELSE = "else"  # Asegúrate de que esto esté definido
+
 
 
 class LexicalError(Exception):

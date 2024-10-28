@@ -1,3 +1,5 @@
+from Lexer import TokenType
+
 class LL1_Parser:
     def __init__(self, grammar):
         self.grammar = grammar
@@ -7,64 +9,64 @@ class LL1_Parser:
     def parse(self, tokens):
         self.input_tokens = tokens
         self.current_token_index = 0
-        return self.parse_program()  
+        return self.parse_program()
 
     def parse_program(self):
-        node = {'type': 'program', 'statements': []}
-        while self.lookahead() != 'ε':
-            statement_node = self.parse_statement()
-            node['statements'].append(statement_node)
-        return node  
+        self.parse_statement_list()
+
+    def parse_statement_list(self):
+        while self.lookahead() is not None:
+            self.parse_statement()
 
     def parse_statement(self):
         current_token = self.lookahead()
-        if current_token == 'ε':  # Manejo del caso de fin de entrada
-            return None
-
-        if current_token.token_type == 'if':
-            return self.parse_if_statement()
-        elif current_token.token_type == 'id':
-            return self.parse_assignment()
+        # Cambiar de current_token.type a current_token.token_type
+        if current_token.token_type == TokenType.IDENTIFIER:  # Cambia 'id' a TokenType.IDENTIFIER
+            self.parse_assignment_statement()
+        elif current_token.token_type == TokenType.IF:  # Asegúrate de que 'if' sea un token válido
+            self.parse_if_statement()
         else:
-            self.error(["if", "id"])
+            self.error([TokenType.IDENTIFIER, TokenType.IF])  # Cambia 'id' a TokenType.IDENTIFIER
+
+    def parse_assignment_statement(self):
+        self.match(TokenType.IDENTIFIER)  # Cambia 'id' a TokenType.IDENTIFIER
+        self.match(TokenType.ASSIGN)  # Cambia '=' a TokenType.ASSIGN
+        self.parse_expression()
 
     def parse_if_statement(self):
-        self.match('if')
-        self.match('(')
+        self.match(TokenType.IF)  # Cambia 'if' a TokenType.IF
+        self.match(TokenType.LPAREN)  # Cambia '(' a TokenType.LPAREN
         self.parse_expression()
-        self.match(')')
-        self.match(':')
+        self.match(TokenType.RPAREN)  # Cambia ')' a TokenType.RPAREN
         self.parse_statement()
-        
-        if self.lookahead().token_type == 'else':
-            self.match('else')
-            self.match(':')
+        if self.lookahead() is not None and self.lookahead().value == 'else':
+            self.match(TokenType.ELSE)  # Cambia 'else' a TokenType.ELSE
             self.parse_statement()
 
-    def parse_assignment(self):
-        self.match('id')
-        self.match('=')
-        self.match('tk_numero')
-        return {'type': 'assignment'}
-
     def parse_expression(self):
-        pass
+        current_token = self.lookahead()
+        if current_token.token_type == TokenType.IDENTIFIER:  # Cambia 'id' a TokenType.IDENTIFIER
+            self.match(TokenType.IDENTIFIER)  # Cambia 'id' a TokenType.IDENTIFIER
+        elif current_token.token_type == TokenType.NUMBER:  # Cambia 'tk_numero' a TokenType.NUMBER
+            self.match(TokenType.NUMBER)  # Cambia 'tk_numero' a TokenType.NUMBER
+        else:
+            self.error([TokenType.IDENTIFIER, TokenType.NUMBER])  # Cambia 'id' a TokenType.IDENTIFIER
 
     def lookahead(self):
         if self.current_token_index < len(self.input_tokens):
             return self.input_tokens[self.current_token_index]
-        return 'ε'  
+        return None  # Fin de la entrada
 
-    def match(self, token_type):
-        if self.lookahead() != 'ε' and self.lookahead().token_type == token_type:
+    def match(self, expected_token):
+        if self.lookahead() is not None and self.lookahead().token_type == expected_token:  # Cambia .value a .token_type
             self.current_token_index += 1
         else:
-            self.error([token_type])
+            self.error([expected_token])
 
     def error(self, expected_tokens):
         current_token = self.lookahead()
-        line_number = current_token.line
-        position = current_token.starting_position
-        lexeme = current_token.value
-        expected_tokens_str = ", ".join(expected_tokens)
-        raise Exception(f"<{line_number},{position}> Error sintactico: se encontro: \"{lexeme}\"; se esperaba: \"{expected_tokens_str}\".")
+        line_number = current_token.line if current_token else 0
+        position = current_token.starting_position if current_token else 0
+        lexeme = current_token.value if current_token else "EOF"
+        expected_tokens_str = ", ".join([str(token) for token in expected_tokens])
+        raise Exception(f"<{line_number},{position}> Error sintáctico: se encontró: \"{lexeme}\"; se esperaba: \"{expected_tokens_str}\".")
