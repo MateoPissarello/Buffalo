@@ -1,5 +1,5 @@
 from keyword import softkwlist
-from utils import KEYWORDS
+from utils import KEYWORDS, SYMBOLS
 
 
 class TokenType:
@@ -45,7 +45,7 @@ SymbolsDict = {
 }
 
 
-¡
+
 
 SymbolsDict = {
     "+": "tk_suma",
@@ -71,28 +71,28 @@ SymbolsDict = {
 }
 
 
-# class Symbols:
-#     TK_SUM = "+"
-#     TK_SUBST = "-"
-#     TK_MULT = "*"
-#     TK_DIV = "/"
-#     TK_MOD = "%"
-#     TK_ASSIGN = "="
-#     TK_EQUAL = "=="
-#     TK_NOT_EQUAL = "!="
-#     TK_GREATER = ">"
-#     TK_LESS = "<"
-#     TK_GREATER_EQUAL = ">="
-#     TK_LESS_EQUAL = "<="
-#     TK_AND = "and"
-#     TK_OR = "or"
-#     TK_NOT = "not"
-#     TK_TRUE = "True"
-#     TK_FALSE = "False"
-#     TK_NONE = "None"
-#     TK_IF = "if"
-#     TK_ELSE = "else"
-#     TK_EXCLAMATION = "!"
+class Symbols:
+    TK_SUM = "+"
+    TK_SUBST = "-"
+    TK_MULT = "*"
+    TK_DIV = "/"
+    TK_MOD = "%"
+    TK_ASSIGN = "="
+    TK_EQUAL = "=="
+    TK_NOT_EQUAL = "!="
+    TK_GREATER = ">"
+    TK_LESS = "<"
+    TK_GREATER_EQUAL = ">="
+    TK_LESS_EQUAL = "<="
+    TK_AND = "and"
+    TK_OR = "or"
+    TK_NOT = "not"
+    TK_TRUE = "True"
+    TK_FALSE = "False"
+    TK_NONE = "None"
+    TK_IF = "if"
+    TK_ELSE = "else"
+    TK_EXCLAMATION = "!"
 
 
 class ReservedWordToken:
@@ -129,6 +129,10 @@ class TokenSymbol:
 def is_identifier_char(c):
     return c.isalnum() or c == "_"
 
+def tk_menor(c):
+    return c == "<"
+def tk_mayor(c):
+    return c == ">"
 
 def is_symbol(c):
     return c in SYMBOLS
@@ -370,16 +374,24 @@ class Lexer:
                         position += 1
                     elif is_equal(char):
                         if position + 1 < length and line[position + 1] == "=":
-                            char = "=="
-                            position += 1
-                        self.tokens.append(
-                            TokenSymbol(
-                                value=SymbolsDict[char],
-                                line=self.lines.index(line) + 1,
-                                starting_position=position + 1,
+                            self.tokens.append(
+                                TokenSymbol(
+                                    value=SymbolsDict["=="],
+                                    line=self.lines.index(line) + 1,
+                                    starting_position=position + 1,
+                                )
                             )
-                        )
-                        position += 1
+                            position += 2  # Salta el siguiente carácter ya que es parte del token
+                        else:
+                            self.tokens.append(
+                                TokenSymbol(
+                                    value=SymbolsDict[char],
+                                    line=self.lines.index(line) + 1,
+                                    starting_position=position + 1,
+                                )
+                            )
+                            position += 1
+
 
                     elif is_admiracion(char):
                         if position + 1 < length and line[position + 1] == "=":
