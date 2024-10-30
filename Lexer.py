@@ -17,6 +17,44 @@ class TokenType:
     IF = "if"  # Asegúrate de que esto esté definido
     ELSE = "else"  # Asegúrate de que esto esté definido
 
+    @classmethod
+    def get_token_name(cls, value):
+        for name, val in vars(cls).items():
+            if val == value:
+                return getattr(cls, name)
+        return None  # Devuelve None si no se encuentra el valor
+
+
+class Detokenizer:
+    def __init__(self, tokens):
+        self.tokens = tokens
+
+    def detokenize(self):
+        result = []
+        for token in self.tokens:
+            if token == TokenType.IDENTIFIER:
+                result.append(token.value)
+            elif token == TokenType.STRING:
+                result.append(token.value)
+            elif token == TokenType.NUMBER:
+                result.append(token.value)
+            elif token == TokenType.LPAREN:
+                result.append("(")
+            elif token == TokenType.RPAREN:
+                result.append(")")
+            elif token == TokenType.COLON:
+                result.append(":")
+            elif token == TokenType.COMMA:
+                result.append(",")
+            elif token == TokenType.ASSIGN:
+                result.append("=")
+            elif token == TokenType.IF:
+                result.append("if")
+            elif token == TokenType.ELSE:
+                result.append("else")
+            else:
+                result.append(token.value)
+        return result
 
 
 class LexicalError(Exception):
@@ -47,8 +85,6 @@ SymbolsDict = {
     "{": "tk_llave_izq",
     "}": "tk_llave_der",
 }
-
-
 
 
 SymbolsDict = {
@@ -133,10 +169,14 @@ class TokenSymbol:
 def is_identifier_char(c):
     return c.isalnum() or c == "_"
 
+
 def tk_menor(c):
     return c == "<"
+
+
 def tk_mayor(c):
     return c == ">"
+
 
 def is_symbol(c):
     return c in SYMBOLS
@@ -395,7 +435,6 @@ class Lexer:
                                 )
                             )
                             position += 1
-
 
                     elif is_admiracion(char):
                         if position + 1 < length and line[position + 1] == "=":

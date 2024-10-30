@@ -6,6 +6,7 @@ from Lexer import Lexer
 from LL1_Parser import LL1_Parser
 from grammar import Grammar
 
+
 def main():
     parser = argparse.ArgumentParser(
         description="Buffalo: tokenizador de archivos de texto conteniendo código de Python"
@@ -36,30 +37,22 @@ def main():
         else:
             for token in tokens:
                 print(token)
+
+        grammar = Grammar()
+        parser = LL1_Parser(grammar)
+        try:
+            parser.parse(tokens)
+            print("El análisis sintáctico ha finalizado exitosamente.")
+        except Exception as e:
+            print(str(e))
     else:
         print("No se proporcionó ningún archivo.")
 
-
     lexer = Lexer(lines=lines)
-
     tokens = lexer.tokenize()
-
 
     # Inicializa el analizador LL1
 
-    grammar = Grammar()
 
-    parser = LL1_Parser(grammar)
-
-
-    try:
-
-        parser.parse(tokens)
-
-        print("El análisis sintáctico ha finalizado exitosamente.")
-
-    except Exception as e:
-
-        print(str(e))
 if __name__ == "__main__":
     main()
