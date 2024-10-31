@@ -66,6 +66,9 @@ class Detokenizer:
                 self.detokenized.append(val)
 
 
+def is_token_comparing_operator(token):
+    return token in [SymbolsDict["=="], SymbolsDict["!="], SymbolsDict["<"], SymbolsDict[">"], SymbolsDict["<="], SymbolsDict[">="]]
+
 class LexicalError(Exception):
     def __init__(self, line, position):
         self.line = line
@@ -117,6 +120,7 @@ SymbolsDict = {
     ".": "tk_punto",
     "{": "tk_llave_izq",
     "}": "tk_llave_der",
+    ":": "tk_dos_puntos",
 }
 
 

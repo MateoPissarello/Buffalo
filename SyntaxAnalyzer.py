@@ -29,22 +29,32 @@ class SyntaxAnalyzer:
         self.parse_expression()  # Primer operando de la condición
         while True:
             current_token = self.lookahead()
-            if current_token and Lexer.is_token_operator_cls(
-                current_token
+            if current_token and isinstance(current_token, Lexer.TokenSymbol) and Lexer.is_token_comparing_operator(
+                current_token.value
             ):  # Comparación
                 self.match(current_token.value)
                 self.parse_expression()  # Segundo operando de la comparación
-            elif current_token and current_token.value in [
-                TokenType.AND,
-                TokenType.OR,
+            elif current_token and isinstance(current_token, Lexer.ReservedWordToken) and current_token.value in [
+                "and",
+                "or",
+                "not",
             ]:  # Lógicos
                 self.match(current_token.value)
                 self.parse_expression()  # Nueva expresión para el operador lógico
             else:
                 break  # No hay más operadores lógicos o de comparación, termina
-
-    def parse_statement(self, lookahead=None):
+    
+    def parse_print_statement(self):
+        self.match(TokenType.PRINT)
+        self.match(TokenType.LPAREN)
+        self.parse_expression()
+        self.match(TokenType.RPAREN)
+    def parse_statement(self, lookahead=None, check_indentation=False):
         current_token = lookahead if lookahead else self.lookahead()
+        if check_indentation:
+            first_token_previous_row = self.lookrowback(current_token.line - 1)
+            if current_token.starting_position !=  first_token_previous_row.starting_position:
+                self.error([f"Indentación incorrecta, se esperaba una columna en {first_token_previous_row.starting_position} pero se encontró en {current_token.starting_position}."])
         # Cambiar de current_token.type a current_token.token_type
         if isinstance(current_token, Lexer.TokenIdentifier):
             if (
@@ -56,15 +66,20 @@ class SyntaxAnalyzer:
                     [TokenType.IDENTIFIER, TokenType.IF]
                 )  # Cambia 'id' a TokenType.IDENTIFIER
         elif isinstance(current_token, Lexer.TokenSymbol):
+
+            if current_token.value == TokenType.COLON:
+                self.match(TokenType.COLON)
             if current_token.value == TokenType.QUOTE:
                 self.parse_quote_statement()
         elif isinstance(current_token, Lexer.ReservedWordToken):
             if current_token.value == "while":
                 self.parse_while_statement()
+            if current_token.value == "print":
+                self.parse_print_statement()
             elif (
                 current_token.value == "if"
             ):  # Asegúrate de que 'if' sea un token válido
-                self.parse_if_statement()
+                self.parse_if_statement(if_pos=current_token.starting_position)
 
     def parse_assignment_statement(self):
         self.match(TokenType.IDENTIFIER)  # Cambia 'id' a TokenType.IDENTIFIER
@@ -82,15 +97,59 @@ class SyntaxAnalyzer:
         self.match(TokenType.STRING)
         self.match(TokenType.QUOTE)
 
-    def parse_if_statement(self):
+    def parse_if_statement(self, if_pos):
         self.match(TokenType.IF)  # Cambia 'if' a TokenType.IF
         self.match(TokenType.LPAREN)  # Cambia '(' a TokenType.LPAREN
         self.parse_condition()
         self.match(TokenType.RPAREN)  # Cambia ')' a TokenType.RPAREN
-        self.parse_statement()
-        if self.lookahead() is not None and self.lookahead().value == "else":
-            self.match(TokenType.ELSE)  # Cambia 'else' a TokenType.ELSE
-            self.parse_statement()
+        self.match(TokenType.COLON)
+        self.parse_block(if_pos)
+        # if self.lookahead() is not None and self.lookahead().value == "else":
+        #     self.match(TokenType.ELSE)  # Cambia 'else' a TokenType.ELSE
+        #     self.parse_statement()
+    def parse_block(self, if_pos):
+        # Obtiene la posición de la columna del primer token de la fila anterior
+        
+        current_token = self.lookahead()
+        if current_token is None:
+            self.error([f"Indentación incorrecta, se esperaba una identación pero se encontró en EOF."])
+        previous_token = self.lookrowback(current_token.line - 1)   
+        previous_column_position = previous_token.starting_position if previous_token else 0
+
+        # La nueva posición de columna debe ser al menos una unidad mayor
+        expected_indent = previous_column_position + 1
+        # Verifica la posición de la columna del token actual
+        current_column_position = current_token.line
+
+        # Si la columna actual es menor que la esperada, se ha salido del bloque
+        if current_column_position < expected_indent:
+            self.error([f"Indentación incorrecta, se esperaba una columna en {expected_indent} pero se encontró en {current_column_position}."])
+
+        # Si la columna actual es igual a la esperada, procesamos la declaración
+        if current_column_position > expected_indent:
+            self.parse_statement()  # Procesa la declaración
+            next_token = self.lookahead()
+            first_block_index = current_token.starting_position
+            if next_token:
+                if next_token.starting_position == first_block_index:
+                    while next_token:
+                        if next_token.starting_position == first_block_index:
+                            self.parse_statement(check_indentation=True)
+                            self.current_token_index += 1
+                            next_token = self.lookahead()
+                        elif next_token.starting_position == if_pos:
+                            break
+                else:
+                    if next_token.starting_position == if_pos:
+                        return
+                    self.error([f"Indentación incorrecta, se esperaba una columna en {first_block_index} pero se encontró en {next_token.starting_position}."])
+
+                    
+        else:
+            # Si la columna actual es mayor que la esperada, esto es un error de indentación
+            self.error([f"Indentación incorrecta, se esperaba una columna en {expected_indent} pero se encontró en {current_column_position}."])
+
+        # Al final del bloque, se puede manejar la dedentación si es necesario
 
     def parse_while_statement(self):
         self.match(TokenType.WHILE)
@@ -129,6 +188,16 @@ class SyntaxAnalyzer:
         if self.current_token_index < len(self.input_tokens):
             return self.input_tokens[self.current_token_index]
         return None  # Fin de la entrada
+    
+    def lookbehind(self):
+        if self.current_token_index > 0:
+            return self.input_tokens[self.current_token_index - 1]
+        return None
+
+    def lookrowback(self, line_before):
+        for token in self.input_tokens:
+            if token.line == line_before:
+                return token
 
     def match(self, expected_token):
         next_token = self.lookahead()
@@ -141,6 +210,7 @@ class SyntaxAnalyzer:
             token_type = next_token.value
         if next_token is not None and token_type == expected_token:
             self.current_token_index += 1
+
         # try:
         #     token_type = next_token.token_type
         # except Exception:
@@ -156,23 +226,26 @@ class SyntaxAnalyzer:
         last_tk = self.input_tokens[self.current_token_index - 1]
         last_tk_line = last_tk.line if last_tk else 0
         last_tk_end = 0
-        if Lexer.is_token_symbol_cls(last_tk):
-            last_tk_end = (
-                len(last_tk.symbol) + last_tk.starting_position if last_tk else 0
-            )
-        elif Lexer.is_token_identifier_cls(last_tk):
-            last_tk_end = (
-                len(last_tk.token_type) + last_tk.starting_position if last_tk else 0
-            )
-        line_number = last_tk_line if last_tk else 0
-        position = last_tk_end if last_tk else 0
-        lexeme = current_token.value if current_token else "EOF"
-        # expected_tokens_str = ", ".join([str(token) for token in expected_tokens])
+        if last_tk:
+            if Lexer.is_token_symbol_cls(last_tk):
+                last_tk_end = (
+                    len(last_tk.symbol) + last_tk.starting_position if last_tk else 0
+                )
+            elif Lexer.is_token_identifier_cls(last_tk):
+                last_tk_end = (
+                    len(last_tk.token_type) + last_tk.starting_position if last_tk else 0
+                )
+            line_number = last_tk_line if last_tk else 0
+            position = last_tk_end if last_tk else 0
+            lexeme = current_token.value if current_token else "EOF"
+            # expected_tokens_str = ", ".join([str(token) for token in expected_tokens])
 
-        representation = Detokenizer(expected_tokens)
-        representation.detokenize()
-        detokenized_tokens = representation.detokenized
-        expected_tokens_str = ", ".join(str(token) for token in detokenized_tokens)
+            representation = Detokenizer(expected_tokens)
+            representation.detokenize()
+            detokenized_tokens = representation.detokenized
+            expected_tokens_str = ", ".join(str(token) for token in detokenized_tokens)
+        else:
+            expected_tokens_str = ", ".join(str(token) for token in expected_tokens)
         if lexeme != "EOF":
             raise Exception(
                 f'<{line_number},{position}> Error sintáctico: se encontró: "{lexeme}"; se esperaba: "{expected_tokens_str}".'
