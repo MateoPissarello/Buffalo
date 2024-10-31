@@ -11,6 +11,7 @@ class TokenType:
     RPAREN = "tk_paren_der"
     COLON = "tk_dos_puntos"
     COMMA = "tk_coma"
+    QUOTE = "tk_comilla"
     WHITESPACE = "WHITESPACE"
     UNKNOWN = "UNKNOWN"
     ASSIGN = "tk_asignacion"  # Asegúrate de que esto esté definido
@@ -28,33 +29,41 @@ class TokenType:
 class Detokenizer:
     def __init__(self, tokens):
         self.tokens = tokens
+        self.detokenized = []
+        self.tokens_map = {
+            "tk_suma": "+",
+            "tk_resta": "-",
+            "tk_mult": "*",
+            "tk_div": "/",
+            "tk_arroba": "@",
+            "tk_mod": "%",
+            "tk_coma": ",",
+            "tk_flecha": "->",
+            "tk_asignacion": "=",
+            "tk_igual": "==",
+            "tk_diferente": "!=",
+            "tk_menor": "<",
+            "tk_mayor": ">",
+            "tk_corchete_izq": "[",
+            "tk_corchete_der": "]",
+            "tk_menor_igual": "<=",
+            "tk_mayor_igual": ">=",
+            "tk_punto": ".",
+            "tk_llave_izq": "{",
+            "tk_llave_der": "}",
+            "tk_comilla": '"',
+            "tk_paren_izq": "(",
+            "tk_paren_der": ")",
+            "tk_dos_puntos": ":",
+        }
 
     def detokenize(self):
-        result = []
         for token in self.tokens:
-            if token == TokenType.IDENTIFIER:
-                result.append(token.value)
-            elif token == TokenType.STRING:
-                result.append(token.value)
-            elif token == TokenType.NUMBER:
-                result.append(token.value)
-            elif token == TokenType.LPAREN:
-                result.append("(")
-            elif token == TokenType.RPAREN:
-                result.append(")")
-            elif token == TokenType.COLON:
-                result.append(":")
-            elif token == TokenType.COMMA:
-                result.append(",")
-            elif token == TokenType.ASSIGN:
-                result.append("=")
-            elif token == TokenType.IF:
-                result.append("if")
-            elif token == TokenType.ELSE:
-                result.append("else")
+            val = self.tokens_map.get(token)
+            if val is None:
+                self.detokenized.append(token)
             else:
-                result.append(token.value)
-        return result
+                self.detokenized.append(val)
 
 
 class LexicalError(Exception):
@@ -63,28 +72,27 @@ class LexicalError(Exception):
         self.position = position
 
 
-SymbolsDict = {
-    "+": "tk_suma",
-    "-": "tk_resta",
-    "*": "tk_mult",
-    "/": "tk_div",
-    "@": "tk_arroba",
-    "%": "tk_mod",
-    ",": "tk_coma",
-    "->": "tk_flecha",
-    "=": "tk_asignacion",
-    "==": "tk_igual",
-    "!=": "tk_diferente",
-    "<": "tk_menor",
-    ">": "tk_mayor",
-    "[": "tk_corchete_izq",
-    "]": "tk_corchete_der",
-    "<=": "tk_menor_igual",
-    ">=": "tk_mayor_igual",
-    ".": "tk_punto",
-    "{": "tk_llave_izq",
-    "}": "tk_llave_der",
-}
+def obtain_key(val):
+    for key, value in SymbolsDict.items():
+        if val == value:
+            return key
+    return None
+
+
+def is_token_identifier_cls(token):
+    return isinstance(token, TokenIdentifier)
+
+
+def is_token_symbol_cls(token):
+    return isinstance(token, TokenSymbol)
+
+
+def is_token_reserved_word_cls(token):
+    return isinstance(token, ReservedWordToken)
+
+
+def is_comparsion_operator(token):
+    return token in ["==", "!=", "<", ">", "<=", ">=", "and", "or", "not", "in", "is"]
 
 
 SymbolsDict = {
@@ -98,6 +106,7 @@ SymbolsDict = {
     "->": "tk_flecha",
     "=": "tk_asignacion",
     "==": "tk_igual",
+    '"': "tk_comilla",
     "!=": "tk_diferente",
     "<": "tk_menor",
     ">": "tk_mayor",
@@ -159,6 +168,7 @@ class TokenIdentifier:
 class TokenSymbol:
     def __init__(self, value, line, starting_position):
         self.value = value
+        self.symbol = obtain_key(value)
         self.line = line
         self.starting_position = starting_position
 
@@ -317,10 +327,18 @@ class Lexer:
                         position += 1
                     elif is_quote(char):
                         # State: Identifying a string literal
+                        self.tokens.append(
+                            TokenSymbol(
+                                value=SymbolsDict[char],
+                                line=self.lines.index(line) + 1,
+                                starting_position=position + 1,
+                            )
+                        )
                         start = position
                         position += 1
                         while position < length and not is_quote(line[position]):
                             position += 1
+
                         if position < length:
                             position += 1  # Skip the closing quote
                             self.tokens.append(
@@ -328,9 +346,16 @@ class Lexer:
                                     token_type=TokenType.STRING,
                                     value=line[start:position],
                                     line=self.lines.index(line) + 1,
-                                    starting_position=start + 1,
+                                    starting_position=start + 2,
                                 )
                             )
+                        self.tokens.append(
+                            TokenSymbol(
+                                value=SymbolsDict['"'],
+                                line=self.lines.index(line) + 1,
+                                starting_position=position,
+                            )
+                        )
                         # else:
                         #     raise RuntimeError("Unterminated string literal")
 
@@ -372,9 +397,9 @@ class Lexer:
                             )
                         position += 1
 
-                    elif is_numer(char):
+                    elif is_number(char):
                         start = position
-                        while position < length and is_numer(line[position]):
+                        while position < length and is_number(line[position]):
                             position += 1
                         self.tokens.append(
                             TokenIdentifier(

@@ -3,8 +3,8 @@
 import argparse
 from FileHandler import FileHandler, LineByLineReadStrategy
 from Lexer import Lexer
-from LL1_Parser import LL1_Parser
-from grammar import Grammar
+from SyntaxAnalyzer import SyntaxAnalyzer
+# from grammar import Grammar
 
 
 def main():
@@ -38,10 +38,10 @@ def main():
             for token in tokens:
                 print(token)
 
-        grammar = Grammar()
-        parser = LL1_Parser(grammar)
+        # grammar = Grammar()
+        syntax_analyzer = SyntaxAnalyzer()
         try:
-            parser.parse(tokens)
+            syntax_analyzer.parse(tokens)
             print("El análisis sintáctico ha finalizado exitosamente.")
         except Exception as e:
             print(str(e))
