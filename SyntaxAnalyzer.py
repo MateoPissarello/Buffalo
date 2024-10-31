@@ -76,10 +76,12 @@ class SyntaxAnalyzer:
                 self.parse_while_statement()
             if current_token.value == "print":
                 self.parse_print_statement()
-            elif (
+            if (
                 current_token.value == "if"
             ):  # Asegúrate de que 'if' sea un token válido
                 self.parse_if_statement(if_pos=current_token.starting_position)
+            if current_token.value == "else":
+                self.parse_else_statement(else_pos = current_token.starting_position)
 
     def parse_assignment_statement(self):
         self.match(TokenType.IDENTIFIER)  # Cambia 'id' a TokenType.IDENTIFIER
@@ -103,11 +105,16 @@ class SyntaxAnalyzer:
         self.parse_condition()
         self.match(TokenType.RPAREN)  # Cambia ')' a TokenType.RPAREN
         self.match(TokenType.COLON)
-        self.parse_block(if_pos)
+        self.parse_block(if_pos, method="if")
         # if self.lookahead() is not None and self.lookahead().value == "else":
         #     self.match(TokenType.ELSE)  # Cambia 'else' a TokenType.ELSE
         #     self.parse_statement()
-    def parse_block(self, if_pos):
+
+    def parse_else_statement(self, else_pos):
+        self.match(TokenType.ELSE)
+        self.match(TokenType.COLON)
+        self.parse_block(else_pos, method="else")
+    def parse_block(self, cond_pos, method:str):
         # Obtiene la posición de la columna del primer token de la fila anterior
         
         current_token = self.lookahead()
@@ -137,11 +144,19 @@ class SyntaxAnalyzer:
                             self.parse_statement(check_indentation=True)
                             self.current_token_index += 1
                             next_token = self.lookahead()
-                        elif next_token.starting_position == if_pos:
-                            break
+                        elif next_token.starting_position ==  cond_pos and method == "if":
+                            if next_token.value  in ["else", "elif"]:
+                                return self.parse_statement()
+                            return
+                        elif next_token.starting_position == cond_pos and method == "else":
+                            return self.parse_statement()
+                        self.error([f"Indentación incorrecta, se esperaba una columna en {first_block_index} pero se encontró en {next_token.starting_position}."])
                 else:
-                    if next_token.starting_position == if_pos:
-                        return
+                    if next_token.starting_position == cond_pos and method == "if":
+                        if next_token.value  in ["else", "elif"]:
+                            return self.parse_statement()
+                        elif next_token.starting_position == cond_pos:
+                            return
                     self.error([f"Indentación incorrecta, se esperaba una columna en {first_block_index} pero se encontró en {next_token.starting_position}."])
 
                     
