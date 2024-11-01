@@ -156,19 +156,22 @@ class SyntaxAnalyzer:
 
         if self.match(TokenType.RANGE, optional=True):  
             self.match(TokenType.LPAREN)
-            self.parse_condition()  
-            self.match(TokenType.RPAREN)
-            self.parse_expression()  
+            start_expr = self.parse_expression() 
+            self.match(TokenType.COMMA)
+            stop_expr = self.parse_expression()
             if self.match(TokenType.COMMA, optional=True):  
-                self.parse_expression()  
+                step_expr = self.parse_expression()  
+            else:
+                step_expr = None  
             self.match(TokenType.RPAREN)
         else:
-            self.parse_expression() 
+            iterable_expr = self.parse_expression()  
+
         self.match(TokenType.COLON)
         self.parse_block(0, method="for")
 
 
-
+        
     def parse_elif_statement(self, elif_pos):
         self.match(TokenType.ELIF)
         self.match(TokenType.LPAREN)
