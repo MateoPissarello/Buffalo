@@ -17,6 +17,7 @@ class TokenType:
     ASSIGN = "tk_asignacion"  # Asegúrate de que esto esté definido
     IF = "if"  # Asegúrate de que esto esté definido
     ELSE = "else"  # Asegúrate de que esto esté definido
+    ELIF = "elif"  # Asegúrate de que esto esté definido
 
     @classmethod
     def get_token_name(cls, value):
@@ -67,7 +68,15 @@ class Detokenizer:
 
 
 def is_token_comparing_operator(token):
-    return token in [SymbolsDict["=="], SymbolsDict["!="], SymbolsDict["<"], SymbolsDict[">"], SymbolsDict["<="], SymbolsDict[">="]]
+    return token in [
+        SymbolsDict["=="],
+        SymbolsDict["!="],
+        SymbolsDict["<"],
+        SymbolsDict[">"],
+        SymbolsDict["<="],
+        SymbolsDict[">="],
+    ]
+
 
 class LexicalError(Exception):
     def __init__(self, line, position):
@@ -270,7 +279,8 @@ class Lexer:
 
     def tokenize(self):
         try:
-            for line in self.lines:
+            for n_line in range(len(self.lines)):
+                line = self.lines[n_line]
                 length = len(line)
                 position = 0
                 while position < length:
@@ -284,7 +294,7 @@ class Lexer:
                             self.tokens.append(
                                 ReservedWordToken(
                                     value=value,
-                                    line=self.lines.index(line) + 1,
+                                    line=n_line + 1,
                                     starting_position=start + 1,
                                 )
                             )
@@ -294,7 +304,7 @@ class Lexer:
                                 TokenIdentifier(
                                     token_type=TokenType.IDENTIFIER,
                                     value=line[start:position],
-                                    line=self.lines.index(line) + 1,
+                                    line=n_line + 1,
                                     starting_position=start + 1,
                                 )
                             )
@@ -305,7 +315,7 @@ class Lexer:
                         self.tokens.append(
                             TokenSymbol(
                                 value=SymbolsDict[char],
-                                line=self.lines.index(line) + 1,
+                                line=n_line + 1,
                                 starting_position=position + 1,
                             )
                         )
@@ -316,7 +326,7 @@ class Lexer:
                             self.tokens.append(
                                 TokenSymbol(
                                     value=SymbolsDict[char],
-                                    line=self.lines.index(line) + 1,
+                                    line=n_line + 1,
                                     starting_position=position + 1,
                                 )
                             )
@@ -324,7 +334,7 @@ class Lexer:
                             self.tokens.append(
                                 TokenSymbol(
                                     value=SymbolsDict[char],
-                                    line=self.lines.index(line) + 1,
+                                    line=n_line + 1,
                                     starting_position=position + 1,
                                 )
                             )
@@ -334,7 +344,7 @@ class Lexer:
                         self.tokens.append(
                             TokenSymbol(
                                 value=SymbolsDict[char],
-                                line=self.lines.index(line) + 1,
+                                line=n_line + 1,
                                 starting_position=position + 1,
                             )
                         )
@@ -349,14 +359,14 @@ class Lexer:
                                 TokenIdentifier(
                                     token_type=TokenType.STRING,
                                     value=line[start:position],
-                                    line=self.lines.index(line) + 1,
+                                    line=n_line + 1,
                                     starting_position=start + 2,
                                 )
                             )
                         self.tokens.append(
                             TokenSymbol(
                                 value=SymbolsDict['"'],
-                                line=self.lines.index(line) + 1,
+                                line=n_line + 1,
                                 starting_position=position,
                             )
                         )
@@ -368,7 +378,7 @@ class Lexer:
                             self.tokens.append(
                                 TokenSymbol(
                                     value=TokenType.LPAREN,
-                                    line=self.lines.index(line) + 1,
+                                    line=n_line + 1,
                                     starting_position=position + 1,
                                 )
                             )
@@ -376,7 +386,7 @@ class Lexer:
                             self.tokens.append(
                                 TokenSymbol(
                                     value=TokenType.RPAREN,
-                                    line=self.lines.index(line) + 1,
+                                    line=n_line + 1,
                                     starting_position=position + 1,
                                 )
                             )
@@ -387,7 +397,7 @@ class Lexer:
                             self.tokens.append(
                                 TokenSymbol(
                                     value=SymbolsDict[char],
-                                    line=self.lines.index(line) + 1,
+                                    line=n_line + 1,
                                     starting_position=position + 1,
                                 )
                             )
@@ -395,7 +405,7 @@ class Lexer:
                             self.tokens.append(
                                 TokenSymbol(
                                     value=SymbolsDict[char],
-                                    line=self.lines.index(line) + 1,
+                                    line=n_line + 1,
                                     starting_position=position + 1,
                                 )
                             )
@@ -409,7 +419,7 @@ class Lexer:
                             TokenIdentifier(
                                 token_type=TokenType.NUMBER,
                                 value=line[start:position],
-                                line=self.lines.index(line) + 1,
+                                line=n_line + 1,
                                 starting_position=start + 1,
                             )
                         )
@@ -418,7 +428,7 @@ class Lexer:
                         self.tokens.append(
                             TokenSymbol(
                                 value=SymbolsDict[char],
-                                line=self.lines.index(line) + 1,
+                                line=n_line + 1,
                                 starting_position=position + 1,
                             )
                         )
@@ -432,7 +442,7 @@ class Lexer:
                         #     TokenIdentifier(
                         #         TokenType.WHITESPACE,
                         #         line[start:position],
-                        #         self.lines.index(line) + 1,
+                        #         n_line + 1,
                         #         start,
                         #     )
                         # )
@@ -440,7 +450,7 @@ class Lexer:
                         self.tokens.append(
                             TokenSymbol(
                                 value=TokenType.COLON,
-                                line=self.lines.index(line) + 1,
+                                line=n_line + 1,
                                 starting_position=position + 1,
                             )
                         )
@@ -450,7 +460,7 @@ class Lexer:
                             self.tokens.append(
                                 TokenSymbol(
                                     value=SymbolsDict["=="],
-                                    line=self.lines.index(line) + 1,
+                                    line=n_line + 1,
                                     starting_position=position + 1,
                                 )
                             )
@@ -459,7 +469,7 @@ class Lexer:
                             self.tokens.append(
                                 TokenSymbol(
                                     value=SymbolsDict[char],
-                                    line=self.lines.index(line) + 1,
+                                    line=n_line + 1,
                                     starting_position=position + 1,
                                 )
                             )
@@ -472,7 +482,7 @@ class Lexer:
                         self.tokens.append(
                             TokenSymbol(
                                 value=SymbolsDict[char],
-                                line=self.lines.index(line) + 1,
+                                line=n_line + 1,
                                 starting_position=position + 1,
                             )
                         )
@@ -481,7 +491,7 @@ class Lexer:
                         self.tokens.append(
                             TokenSymbol(
                                 value=SymbolsDict[char],
-                                line=self.lines.index(line) + 1,
+                                line=n_line + 1,
                                 starting_position=position + 1,
                             )
                         )
@@ -495,7 +505,7 @@ class Lexer:
                         self.tokens.append(
                             TokenSymbol(
                                 value=SymbolsDict[char],
-                                line=self.lines.index(line) + 1,
+                                line=n_line + 1,
                                 starting_position=initial_position + 1,
                             )
                         )
@@ -505,7 +515,7 @@ class Lexer:
                         self.tokens.append(
                             TokenSymbol(
                                 value=SymbolsDict[char],
-                                line=self.lines.index(line) + 1,
+                                line=n_line + 1,
                                 starting_position=position + 1,
                             )
                         )
@@ -513,7 +523,7 @@ class Lexer:
 
                     else:
                         raise LexicalError(
-                            line=self.lines.index(line) + 1, position=position + 1
+                            line=n_line + 1, position=position + 1
                         )
             return self.tokens
         except LexicalError as e:
