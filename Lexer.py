@@ -21,10 +21,12 @@ class TokenType:
     IMPORT = "import"
     FROM = "from"
     DOT = "tk_punto"
+    DEF = "def"
+    RETURN = "return"
     FOR = "for"
     IN = "in"
     RANGE = "range"
-    LBRACE  = "tk_llave_izq"
+    LBRACE = "tk_llave_izq"
     RBRACE = "tk_llave_der"
     
     @classmethod

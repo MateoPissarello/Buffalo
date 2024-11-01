@@ -41,6 +41,23 @@ class SyntaxAnalyzer:
         self.match(TokenType.IMPORT)
         self.match(TokenType.IDENTIFIER)
 
+    def parse_function_definition(self, def_pos):
+        self.match(TokenType.DEF)
+        self.match(TokenType.IDENTIFIER)
+        self.match(TokenType.LPAREN)
+        self.parse_expression_list()
+        self.match(TokenType.RPAREN)
+        self.match(TokenType.COLON)
+        self.parse_block(def_pos, method="def")
+
+    def parse_expression_list(self):
+        self.parse_expression()
+        next_token = self.lookahead()
+        while next_token and next_token.value == TokenType.COMMA:
+            self.match(TokenType.COMMA)
+            self.parse_expression()
+            next_token = self.lookahead()
+
     def parse_condition(self):
         self.parse_expression()  # Primer operando de la condición
         while True:
@@ -121,6 +138,19 @@ class SyntaxAnalyzer:
                 self.parse_from_statement()
             elif current_token.value == "for":
                 self.parse_for_statement(for_pos=current_token.starting_position)
+            elif current_token.value == "def":
+                self.parse_function_definition(def_pos=current_token.starting_position)
+            elif current_token.value == "return":
+                self.parse_return_statement()
+
+    def parse_return_statement(self):
+        self.match(TokenType.RETURN)
+        self.match(TokenType.IDENTIFIER)
+        # next_token = self.lookahead()
+        # while next_token and next_token.value == TokenType.COMMA:
+        #     self.match(TokenType.COMMA)
+        #     self.parse_expression()
+        #     next_token = self.lookahead()
 
     def parse_assignment_statement(self):
         self.match(TokenType.IDENTIFIER)  # Cambia 'id' a TokenType.IDENTIFIER
@@ -204,7 +234,6 @@ class SyntaxAnalyzer:
         expected_indent = previous_column_position + 1
         # Verifica la posición de la columna del token actual
         current_column_position = current_token.starting_position
-
         # Si la columna actual es menor que la esperada, se ha salido del bloque
         if current_column_position < expected_indent:
             self.error(
@@ -223,21 +252,26 @@ class SyntaxAnalyzer:
                     while next_token:
                         if next_token.starting_position == first_block_index:
                             self.parse_statement(check_indentation=True)
-                            self.current_token_index += 1
+                            # self.current_token_index += 1
                             next_token = self.lookahead()
+
+                        
 
                         elif next_token.starting_position == cond_pos and method in [
                             "if",
                             "elif",
+                            "def",
                         ]:
                             if next_token.value in ["else", "elif"]:
                                 return self.parse_statement()
-                            return
+                            else:
+                                return
                         elif (
                             next_token.starting_position == cond_pos
                             and method == "else"
                         ):
                             return self.parse_statement()
+
                         else:
                             self.error(
                                 [
@@ -293,6 +327,14 @@ class SyntaxAnalyzer:
                     opt = self.match(Lexer.SymbolsDict["."], optional=True)
                     if opt:
                         self.match(TokenType.IDENTIFIER)
+
+                    opt = self.match(Lexer.SymbolsDict["+"], optional=True)
+                    if opt:
+                        iden = self.match(TokenType.IDENTIFIER, optional=True)
+                        num = self.match(TokenType.NUMBER, optional=True)
+                        if not iden and not num:
+                            self.error([TokenType.IDENTIFIER, TokenType.NUMBER])
+
                 elif (
                     token_type == TokenType.NUMBER
                 ):  # Cambia 'tk_numero' a TokenType.NUMBER
