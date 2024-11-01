@@ -10,6 +10,7 @@ KEYWORDS = {
     "break",
     "class",
     "continue",
+    "range",
     "def",
     "del",
     "elif",
@@ -39,9 +40,7 @@ KEYWORDS = {
     "print",
     "object",
     "__init__",
-    "__main__"
-    "__str__"
-    "__repr__"
+    "__main__" "__str__" "__repr__",
 }
 
 SYMBOLS = {
