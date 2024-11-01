@@ -14,10 +14,12 @@ class TokenType:
     QUOTE = "tk_comilla"
     WHITESPACE = "WHITESPACE"
     UNKNOWN = "UNKNOWN"
-    ASSIGN = "tk_asignacion"  # Asegúrate de que esto esté definido
-    IF = "if"  # Asegúrate de que esto esté definido
-    ELSE = "else"  # Asegúrate de que esto esté definido
-    ELIF = "elif"  # Asegúrate de que esto esté definido
+    ASSIGN = "tk_asignacion"
+    IF = "if"
+    ELSE = "else"
+    ELIF = "elif"
+    IMPORT = "import"
+    DOT = "tk_punto"
 
     @classmethod
     def get_token_name(cls, value):
@@ -522,9 +524,7 @@ class Lexer:
                         position += 1
 
                     else:
-                        raise LexicalError(
-                            line=n_line + 1, position=position + 1
-                        )
+                        raise LexicalError(line=n_line + 1, position=position + 1)
             return self.tokens
         except LexicalError as e:
             self.tokens.append(f">>>Error lexico(linea:{e.line},posicion:{e.position})")

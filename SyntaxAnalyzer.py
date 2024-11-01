@@ -25,6 +25,13 @@ class SyntaxAnalyzer:
     def handle_quote(self):
         self.parse_quote_statement()
 
+    def parse_import_statement(self):
+        self.match(TokenType.IMPORT)
+        self.match(TokenType.IDENTIFIER)
+        opt = self.match(Lexer.SymbolsDict["."], optional=True)
+        if opt:
+            self.match(TokenType.IDENTIFIER)
+
     def parse_condition(self):
         self.parse_expression()  # Primer operando de la condición
         while True:
@@ -84,19 +91,25 @@ class SyntaxAnalyzer:
 
             if current_token.value == TokenType.COLON:
                 self.match(TokenType.COLON)
-            if current_token.value == TokenType.QUOTE:
+            elif current_token.value == TokenType.QUOTE:
                 self.parse_quote_statement()
         elif isinstance(current_token, Lexer.ReservedWordToken):
             if current_token.value == "while":
                 self.parse_while_statement()
-            if current_token.value == "print":
+            elif current_token.value == "print":
                 self.parse_print_statement()
-            if current_token.value == "if":  # Asegúrate de que 'if' sea un token válido
+            elif (
+                current_token.value == "if"
+            ):  # Asegúrate de que 'if' sea un token válido
                 self.parse_if_statement(if_pos=current_token.starting_position)
-            if current_token.value == "else":
+            elif current_token.value == "else":
                 self.parse_else_statement(else_pos=current_token.starting_position)
-            if current_token.value == "elif":
+            elif current_token.value == "elif":
                 self.parse_elif_statement(elif_pos=current_token.starting_position)
+            elif current_token.value == "import":
+                self.parse_import_statement()
+            elif current_token.value == "from":
+                self.parse_from_statement()
 
     def parse_assignment_statement(self):
         self.match(TokenType.IDENTIFIER)  # Cambia 'id' a TokenType.IDENTIFIER
@@ -243,6 +256,9 @@ class SyntaxAnalyzer:
                     self.match(
                         TokenType.IDENTIFIER
                     )  # Cambia 'id' a TokenType.IDENTIFIER
+                    opt = self.match(Lexer.SymbolsDict["."], optional=True)
+                    if opt:
+                        self.match(TokenType.IDENTIFIER)
                 elif (
                     token_type == TokenType.NUMBER
                 ):  # Cambia 'tk_numero' a TokenType.NUMBER
@@ -276,7 +292,7 @@ class SyntaxAnalyzer:
                 break
         return before_token
 
-    def match(self, expected_token):
+    def match(self, expected_token, optional=False):
         next_token = self.lookahead()
 
         if Lexer.is_token_identifier_cls(next_token):
@@ -287,6 +303,7 @@ class SyntaxAnalyzer:
             token_type = next_token.value
         if next_token is not None and token_type == expected_token:
             self.current_token_index += 1
+            return True
 
         # try:
         #     token_type = next_token.token_type
@@ -296,7 +313,9 @@ class SyntaxAnalyzer:
         #     if next_token is not None and token_type == expected_token:
         #         self.current_token_index += 1
         else:
-            self.error([expected_token])
+            if not optional:
+                self.error([expected_token])
+            return False
 
     def error(self, expected_tokens):
         current_token = self.lookahead()
