@@ -21,6 +21,8 @@ class TokenType:
     IMPORT = "import"
     FROM = "from"
     DOT = "tk_punto"
+    DEF = "def"
+    RETURN = "return"
 
     @classmethod
     def get_token_name(cls, value):
