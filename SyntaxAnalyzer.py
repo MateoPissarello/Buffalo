@@ -32,6 +32,15 @@ class SyntaxAnalyzer:
         if opt:
             self.match(TokenType.IDENTIFIER)
 
+    def parse_from_statement(self):
+        self.match(TokenType.FROM)
+        self.match(TokenType.IDENTIFIER)
+        opt = self.match(Lexer.SymbolsDict["."], optional=True)
+        if opt:
+            self.match(TokenType.IDENTIFIER)
+        self.match(TokenType.IMPORT)
+        self.match(TokenType.IDENTIFIER)
+
     def parse_condition(self):
         self.parse_expression()  # Primer operando de la condición
         while True:

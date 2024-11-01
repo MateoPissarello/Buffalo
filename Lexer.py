@@ -19,6 +19,7 @@ class TokenType:
     ELSE = "else"
     ELIF = "elif"
     IMPORT = "import"
+    FROM = "from"
     DOT = "tk_punto"
 
     @classmethod
