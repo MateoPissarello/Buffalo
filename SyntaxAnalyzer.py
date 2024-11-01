@@ -136,6 +136,8 @@ class SyntaxAnalyzer:
                 self.parse_import_statement()
             elif current_token.value == "from":
                 self.parse_from_statement()
+            elif current_token.value == "for":
+                self.parse_for_statement(for_pos=current_token.starting_position)
             elif current_token.value == "def":
                 self.parse_function_definition(def_pos=current_token.starting_position)
             elif current_token.value == "return":
@@ -176,7 +178,30 @@ class SyntaxAnalyzer:
         # if self.lookahead() is not None and self.lookahead().value == "else":
         #     self.match(TokenType.ELSE)  # Cambia 'else' a TokenType.ELSE
         #     self.parse_statement()
+  
+    def parse_for_statement(self, for_pos):
+        self.match(TokenType.FOR)        
+        self.match(TokenType.IDENTIFIER)        
+        self.match(TokenType.IN)                
 
+        if self.match(TokenType.RANGE, optional=True):  
+            self.match(TokenType.LPAREN)
+            start_expr = self.parse_expression() 
+            self.match(TokenType.COMMA)
+            stop_expr = self.parse_expression()
+            if self.match(TokenType.COMMA, optional=True):  
+                step_expr = self.parse_expression()  
+            else:
+                step_expr = None  
+            self.match(TokenType.RPAREN)
+        else:
+            iterable_expr = self.parse_expression()  
+
+        self.match(TokenType.COLON)
+        self.parse_block(0, method="for")
+
+
+        
     def parse_elif_statement(self, elif_pos):
         self.match(TokenType.ELIF)
         self.match(TokenType.LPAREN)

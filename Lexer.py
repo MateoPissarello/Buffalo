@@ -23,7 +23,12 @@ class TokenType:
     DOT = "tk_punto"
     DEF = "def"
     RETURN = "return"
-
+    FOR = "for"
+    IN = "in"
+    RANGE = "range"
+    LBRACE = "tk_llave_izq"
+    RBRACE = "tk_llave_der"
+    
     @classmethod
     def get_token_name(cls, value):
         for name, val in vars(cls).items():

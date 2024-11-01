@@ -10,6 +10,7 @@ KEYWORDS = {
     "break",
     "class",
     "continue",
+    "range",
     "def",
     "del",
     "elif",
