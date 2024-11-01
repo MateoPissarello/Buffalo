@@ -1,5 +1,6 @@
 from keyword import softkwlist
-from utils import KEYWORDS, SYMBOLS 
+from utils import KEYWORDS, SYMBOLS
+
 
 class TokenType:
     IDENTIFIER = "id"
@@ -15,10 +16,6 @@ class TokenType:
     ASSIGN = "tk_asignacion"
     IF = "if"
     ELSE = "else"
-
-
-
-
 
 
 class Token:
@@ -51,10 +48,14 @@ class TokenizerV2:
                 char = line[position]
                 if char.isalpha() or char == "_":
                     start = position
-                    while position < length and (line[position].isalnum() or line[position] == "_"):
+                    while position < length and (
+                        line[position].isalnum() or line[position] == "_"
+                    ):
                         position += 1
                     value = line[start:position]
-                    token_type = TokenType.IDENTIFIER if value not in KEYWORDS else value
+                    token_type = (
+                        TokenType.IDENTIFIER if value not in KEYWORDS else value
+                    )
                     self.tokens.append(Token(token_type, value, line_num, start + 1))
                 elif char.isspace():
                     position += 1
@@ -64,9 +65,15 @@ class TokenizerV2:
                     while position < length and line[position] != '"':
                         position += 1
                     position += 1  # Skip closing quote
-                    self.tokens.append(Token(TokenType.STRING, line[start:position], line_num, start + 1))
+                    self.tokens.append(
+                        Token(
+                            TokenType.STRING, line[start:position], line_num, start + 1
+                        )
+                    )
                 elif char in SYMBOLS:
-                    self.tokens.append(Token(SYMBOLS[char], char, line_num, position + 1))
+                    self.tokens.append(
+                        Token(SYMBOLS[char], char, line_num, position + 1)
+                    )
                     position += 1
                 else:
                     raise LexicalError(line_num, position + 1)

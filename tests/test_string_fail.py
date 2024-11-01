@@ -2,6 +2,3 @@
 
 mivaralbe1 = "hola"
 print(mivaralbe1)
-
- 
-
