@@ -119,6 +119,8 @@ class SyntaxAnalyzer:
                 self.parse_import_statement()
             elif current_token.value == "from":
                 self.parse_from_statement()
+            elif current_token.value == "for":
+                self.parse_for_statement(for_pos=current_token.starting_position)
 
     def parse_assignment_statement(self):
         self.match(TokenType.IDENTIFIER)  # Cambia 'id' a TokenType.IDENTIFIER
@@ -146,7 +148,30 @@ class SyntaxAnalyzer:
         # if self.lookahead() is not None and self.lookahead().value == "else":
         #     self.match(TokenType.ELSE)  # Cambia 'else' a TokenType.ELSE
         #     self.parse_statement()
+  
+    def parse_for_statement(self, for_pos):
+        self.match(TokenType.FOR)        
+        self.match(TokenType.IDENTIFIER)        
+        self.match(TokenType.IN)                
 
+        if self.match(TokenType.RANGE, optional=True):  
+            self.match(TokenType.LPAREN)
+            start_expr = self.parse_expression() 
+            self.match(TokenType.COMMA)
+            stop_expr = self.parse_expression()
+            if self.match(TokenType.COMMA, optional=True):  
+                step_expr = self.parse_expression()  
+            else:
+                step_expr = None  
+            self.match(TokenType.RPAREN)
+        else:
+            iterable_expr = self.parse_expression()  
+
+        self.match(TokenType.COLON)
+        self.parse_block(0, method="for")
+
+
+        
     def parse_elif_statement(self, elif_pos):
         self.match(TokenType.ELIF)
         self.match(TokenType.LPAREN)
@@ -178,7 +203,7 @@ class SyntaxAnalyzer:
         # La nueva posición de columna debe ser al menos una unidad mayor
         expected_indent = previous_column_position + 1
         # Verifica la posición de la columna del token actual
-        current_column_position = current_token.line
+        current_column_position = current_token.starting_position
 
         # Si la columna actual es menor que la esperada, se ha salido del bloque
         if current_column_position < expected_indent:
